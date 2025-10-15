@@ -1,0 +1,32 @@
+.clock-wrapper {
+  text-align: center;
+}
+
+.time-display {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.5rem; /* 24px */
+  font-weight: bold;
+  color: #67e8f9; /* cyan-300 */
+  background-color: #1e293b; /* slate-800 */
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem 0.5rem 0 0; /* Rounded top corners */
+  border: 2px solid #334155; /* slate-700 */
+  border-bottom: 1px solid #334155;
+  box-shadow: 0 0 15px rgba(103, 232, 249, 0.2);
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.date-display {
+  font-family: sans-serif;
+  font-size: 0.75rem; /* 12px */
+  font-weight: 600;
+  color: #cbd5e1; /* slate-300 */
+  background-color: #283447; /* Darker slate */
+  padding: 0.25rem 1rem;
+  border-radius: 0 0 0.5rem 0.5rem; /* Rounded bottom corners */
+  border: 2px solid #334155; /* slate-700 */
+  border-top: none;
+  margin: 0;
+  text-transform: uppercase;
+}

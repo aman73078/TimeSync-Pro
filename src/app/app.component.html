@@ -1,0 +1,359 @@
+<div class="min-h-screen bg-slate-900 text-gray-100 p-3 sm:p-6 font-inter">
+      <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-6 flex items-center justify-between">
+          <div>
+            <h1 class="text-4xl font-extrabold text-cyan-400 mb-1 tracking-tighter">TimeSync Pro</h1>
+            <!-- Display the Local User ID used for tracking -->
+            <p class="text-base text-slate-400">Local task logging. (User ID: <span class="text-xs font-mono text-slate-500">{{ localUserId() }}</span>)</p>
+          </div>
+          <app-digital-clock></app-digital-clock>
+        </header>
+
+        <!-- Employee and Shift Info Card -->
+        <div class="bg-slate-800 shadow-2xl rounded-xl p-3 mb-6 border border-slate-700/50">
+          <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-700">
+            <!-- Employee Name (Editable & Persistent) -->
+            <div class="flex flex-col p-3">
+              <span class="text-xxs font-medium uppercase text-cyan-400 mb-0.5">Employee Name</span>
+              <input
+                type="text"
+                [value]="userName()"
+                (input)="updateUserName($event)"
+                placeholder="Your Name"
+                class="bg-transparent text-base font-semibold text-gray-200 border-b border-transparent focus:border-cyan-400 outline-none transition duration-200 p-0 m-0"
+              />
+            </div>
+            
+            <!-- Employee ID (Editable & Persistent) -->
+            <div class="flex flex-col p-3">
+              <span class="text-xxs font-medium uppercase text-cyan-400 mb-0.5">Employee ID</span>
+              <input
+                type="text"
+                [value]="employeeIdDisplay()"
+                (input)="updateEmployeeIdDisplay($event)"
+                placeholder="e.g., SIPL6095"
+                class="bg-transparent text-base font-semibold text-gray-200 border-b border-transparent focus:border-cyan-400 outline-none transition duration-200 p-0 m-0"
+              />
+            </div>
+            
+            <!-- Shift Time -->
+            <div class="flex flex-col p-3">
+              <span class="text-xxs font-medium uppercase text-cyan-400 mb-0.5">Shift Time</span>
+              <span class="text-base font-bold text-green-400">{{ shiftTime() }}</span>
+            </div>
+            
+            <!-- Today's Date -->
+            <div class="flex flex-col p-3">
+              <span class="text-xxs font-medium uppercase text-cyan-400 mb-0.5">Today's Date</span>
+              <span class="text-base font-semibold text-gray-200">{{ todayDate() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LAYOUT: Input Form (lg:col-span-2) and Tracker (lg:col-span-1) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          
+          <!-- 1. Input Form Card (LEFT) -->
+          <div class="lg:col-span-2 bg-slate-800 shadow-xl rounded-xl p-4 border border-slate-700/50">
+            <h2 class="text-2xl font-bold mb-4 text-gray-100">1. Define Task</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <!-- Project Name -->
+              <label class="block">
+                <span class="text-xs text-slate-300 font-semibold mb-1 block">Project Name (Required)</span> 
+                <input
+                  type="text"
+                  [value]="currentTask().projectName"
+                  (input)="updateTaskField('projectName', $event)"
+                  [disabled]="status() === 'FirstEntryTracking' || status() === 'SecondEntryTracking'"
+                  placeholder="e.g., Quantum Project Alpha"
+                  class="w-full px-3 py-2 border border-slate-700 bg-slate-900 text-gray-100 rounded-lg focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition duration-200 disabled:bg-slate-700 disabled:text-gray-400 outline-none shadow-inner"
+                  />
+              </label>
+
+              <!-- Client Name -->
+              <label class="block">
+                <span class="text-xs text-slate-300 font-semibold mb-1 block">Client Name (Required)</span>
+                <input
+                  type="text"
+                  [value]="currentTask().clientName"
+                  (input)="updateTaskField('clientName', $event)"
+                  [disabled]="status() === 'FirstEntryTracking' || status() === 'SecondEntryTracking'"
+                  placeholder="e.g., Stellar Dynamics Inc."
+                  class="w-full px-3 py-2 border border-slate-700 bg-slate-900 text-gray-100 rounded-lg focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition duration-200 disabled:bg-slate-700 disabled:text-gray-400 outline-none shadow-inner"
+                />
+              </label>
+
+              <!-- Task Details (Full width) -->
+              <label class="block md:col-span-2">
+                <span class="text-xs text-slate-300 font-semibold mb-1 block">Task Details (Required)</span>
+                <textarea
+                  [value]="currentTask().taskDetails"
+                  (input)="updateTaskField('taskDetails', $event)"
+                  [disabled]="status() === 'FirstEntryTracking' || status() === 'SecondEntryTracking'"
+                  placeholder="Describe your current activity in detail..."
+                  rows="2"
+                  class="w-full px-3 py-2 border border-slate-700 bg-slate-900 text-gray-100 rounded-lg focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition duration-200 resize-none disabled:bg-slate-700 disabled:text-gray-400 outline-none shadow-inner"
+                ></textarea>
+              </label>
+            </div>
+          </div>
+
+          <!-- 2. Live Tracker Card (RIGHT) -->
+          <div class="lg:col-span-1 p-4 rounded-xl shadow-2xl transition duration-500 relative overflow-hidden flex flex-col justify-between h-full" 
+               [class]="status() === 'FirstEntryTracking' || status() === 'SecondEntryTracking' ? 'bg-gradient-to-br from-green-700 to-green-900 text-white tracker-pulse' : 'bg-gradient-to-br from-slate-700 to-slate-900 border-4 border-cyan-500/50 text-white'">
+
+            <div class="flex flex-col items-center justify-center pt-2">
+              <h2 class="text-2xl font-extrabold mb-3 pb-1 w-full text-center border-b border-white/30">LIVE TRACKER</h2>
+              
+              <p class="text-xs font-medium mb-3 uppercase tracking-widest text-white/80">
+                {{ status() === 'FirstEntryTracking' || status() === 'SecondEntryTracking' ? 'SESSION ACTIVE' : (status() === 'ReadyForSecondEntry' ? 'SESSION PAUSED' : 'READY') }}
+              </p>
+
+              <!-- Timer Display - Large and prominent -->
+              <div class="text-6xl font-mono font-bold tabular-nums tracking-widest mb-6 bg-white/10 px-4 py-2 rounded-lg shadow-inner text-cyan-400">
+                {{ timerDisplay() }}
+              </div>
+              
+              <!-- Action Buttons Container (Updated for specific show/hide logic) -->
+              <div class="grid grid-cols-2 gap-3 w-full">
+                
+                @if (status() === 'Ready' && todayEntryCount() < 1) {
+                  <!-- START Button (1st entry) -->
+                  <button
+                    (click)="startTracking()"
+                    [disabled]="!isStartAllowed()"
+                    class="col-span-2 text-base font-extrabold py-2 rounded-lg transition duration-300 transform shadow-xl disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.05]"
+                    [class]="isStartAllowed() ? 'bg-cyan-500 text-slate-900 hover:bg-cyan-400' : 'bg-slate-700 text-gray-400'">
+                    START
+                  </button>
+                }
+
+                @if (status() === 'FirstEntryTracking') {
+                  <!-- PAUSE Button (saves 1st entry) -->
+                  <button
+                    (click)="pauseTracking()"
+                    class="col-span-2 text-base font-extrabold py-2 rounded-lg transition duration-300 transform shadow-xl hover:scale-[1.05] bg-yellow-500 hover:bg-yellow-400 text-slate-900">
+                    PAUSE
+                  </button>
+                }
+
+                @if (status() === 'ReadyForSecondEntry') {
+                  <!-- RESUME Button (starts 2nd entry) -->
+                  <button
+                    (click)="resumeTracking()"
+                    [disabled]="!isFormValid()"
+                    class="col-span-2 text-base font-extrabold py-2 rounded-lg transition duration-300 transform shadow-xl disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.05]"
+                    [class]="isFormValid() ? 'bg-green-500 hover:bg-green-400 text-slate-900' : 'bg-slate-700 text-gray-400'">
+                    RESUME
+                  </button>
+                }
+
+                @if (status() === 'SecondEntryTracking') {
+                  <!-- END TIME & SAVE Button (saves 2nd entry) -->
+                  <button
+                    (click)="endTracking()"
+                    class="col-span-2 text-base font-extrabold py-2 rounded-lg transition duration-300 transform hover:scale-[1.05] shadow-xl bg-pink-600 hover:bg-pink-500 text-white">
+                    END TIME & SAVE
+                  </button>
+                }
+              </div>
+              
+              <!-- Conditional messages based on state and limits -->
+              <div class="mt-3">
+                @if (status() === 'Ready' && todayEntryCount() >= 2) {
+                  <p class="text-xs text-yellow-300 font-medium text-center">
+                    &#9888; **Daily Entry Limit Reached.** You can only add two entries per day.
+                  </p>
+                } @else if ((status() === 'Ready' || status() === 'ReadyForSecondEntry') && !isFormValid()) {
+                  <p class="text-xs text-red-300 font-medium text-center">
+                    &#9888; Required Project/Client/Task details missing to {{ status() === 'Ready' ? 'START' : 'RESUME' }} tracking.
+                  </p>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time Entry History Table -->
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-2xl font-bold text-gray-100">3. Session History</h2>
+          @if (todayEntryCount() > 0) {
+            <button
+              (click)="copyAllEntriesToClipboard()"
+              class="flex items-center space-x-2 px-3 py-1 text-xs font-semibold rounded-lg transition duration-150 disabled:opacity-50"
+              [class]="copiedAll() ? 'bg-green-500 text-slate-900' : 'bg-cyan-600 text-white hover:bg-cyan-500'"
+              [disabled]="copiedAll()">
+              @if (copiedAll()) {
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>
+                <span>Copied!</span>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span>Copy Today's Entries</span>
+              }
+            </button>
+          }
+        </div>
+
+        @if (isStateLoaded() === false) {
+          <div class="text-center py-6 bg-slate-800 rounded-xl shadow-inner border border-dashed border-cyan-500/50"> 
+            <h3 class="mt-2 text-base font-medium text-gray-200">Initializing local state...</h3> 
+            <p class="text-sm text-slate-400">Loading settings and history from browser storage.</p>
+          </div>
+        } @else if (timeEntries().length === 0) {
+          <div class="text-center py-6 bg-slate-800 rounded-xl shadow-inner border border-dashed border-slate-700">
+            <svg class="mx-auto h-10 w-10 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"> 
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="mt-4 text-base font-medium text-gray-200">No time entries recorded yet</h3>
+            <p class="mt-1 text-sm text-slate-400">Start tracking a task to populate your history here.</p>
+          </div>
+        } @else {
+          <div class="overflow-x-auto bg-slate-800 shadow-2xl rounded-xl border border-slate-700">
+            <table class="min-w-full divide-y divide-slate-700">
+              <!-- UPDATED TABLE HEADER TO INCLUDE ACTION COLUMN -->
+              <thead class="bg-slate-700 sticky top-0 z-10">
+                <tr>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-cyan-400 uppercase tracking-wider min-w-[60px]">Date</th>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-cyan-400 uppercase tracking-wider min-w-[100px]">Employee ID</th>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-cyan-400 uppercase tracking-wider min-w-[120px]">Employee Name</th>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-cyan-400 uppercase tracking-wider min-w-[70px]">Shift Time</th>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-green-400 uppercase tracking-wider min-w-[70px]">Start Time</th>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-pink-500 uppercase tracking-wider min-w-[70px]">End Time</th>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-cyan-400 uppercase tracking-wider min-w-[90px]">Total Time</th>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-cyan-400 uppercase tracking-wider min-w-[150px]">Task Details</th>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-cyan-400 uppercase tracking-wider min-w-[80px]">Project Name</th>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-cyan-400 uppercase tracking-wider min-w-[80px]">Client Name</th>
+                  <th scope="col" class="px-3 py-2 text-left text-xxs font-semibold text-cyan-400 uppercase tracking-wider min-w-[50px]">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-700">
+                @for (entry of timeEntries(); track entry.id; let i = $index) {
+                  <tr class="transition duration-100" [class]="i % 2 === 0 ? 'bg-slate-800 hover:bg-slate-700/70' : 'bg-slate-900/50 hover:bg-slate-700/70'">
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-200">{{ entry.date }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-slate-500 font-mono">{{ entry.employeeId }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-200">{{ entry.employeeName }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-slate-400">{{ entry.shiftTime }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-green-400 tabular-nums">{{ entry.startTime }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-pink-500 tabular-nums">{{ entry.endTime }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-base font-extrabold text-cyan-400 tabular-nums">{{ entry.totalTimeDisplay }}</td>
+                    <td class="px-3 py-2 text-xs text-slate-400 max-w-xs truncate">{{ entry.taskDetails }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs font-semibold text-gray-100">{{ entry.projectName }}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-slate-400">{{ entry.clientName }}</td>
+                    
+                    <!-- NEW ACTION COLUMN -->
+                    <td class="px-3 py-2 whitespace-nowrap text-xs">
+                      <div class="flex items-center space-x-2">
+                        <button 
+                          (click)="openEditModal(entry)"
+                          class="text-yellow-400 hover:text-yellow-300 transition duration-150 p-1 rounded-full hover:bg-slate-700"
+                          title="Edit Entry">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                        </button>
+                        <button
+                          (click)="copyEntryToClipboard(entry)"
+                          class="text-cyan-400 hover:text-cyan-300 transition-all duration-150 p-1 rounded-full hover:bg-slate-700 w-7 h-7 flex items-center justify-center"
+                          title="Copy Details">
+                          @if (copiedEntryId() === entry.id) {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check text-green-400"><path d="M20 6 9 17l-5-5"/></svg>
+                          } @else {
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                          }
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } 
+      </div>
+    </div>
+    
+    <!-- EDIT MODAL OVERLAY -->
+    @if (editingEntry()) {
+      <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeEditModal()">
+        <div class="bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg p-6 border border-cyan-400/50" (click)="$event.stopPropagation()">
+          <h3 class="text-2xl font-bold mb-4 text-cyan-400 border-b border-slate-700 pb-2">Edit Time Entry</h3>
+          
+          <p class="text-sm text-slate-400 mb-4">Editing segment recorded at: 
+            <span class="font-mono text-gray-200">{{ editingEntry()?.startTime }} on {{ editingEntry()?.date }}</span>
+          </p>
+
+          <form (submit)="$event.preventDefault(); saveEditedEntry()">
+            <div class="space-y-4">
+              
+              <!-- Shift Time -->
+              <label class="block">
+                <span class="text-xs text-slate-300 font-semibold mb-1 block">Shift Time</span> 
+                <input
+                  type="text"
+                  [value]="editFormData().shiftTime"
+                  (input)="updateEditField('shiftTime', $event)"
+                  placeholder="e.g., 11:00 AM - 08:00 PM"
+                  class="w-full px-3 py-2 border border-slate-700 bg-slate-900 text-gray-100 rounded-lg focus:border-cyan-400 outline-none shadow-inner"
+                />
+              </label>
+
+              <!-- Project Name -->
+              <label class="block">
+                <span class="text-xs text-slate-300 font-semibold mb-1 block">Project Name (Required)</span> 
+                <input
+                  type="text"
+                  [value]="editFormData().projectName"
+                  (input)="updateEditField('projectName', $event)"
+                  placeholder="Project Alpha"
+                  class="w-full px-3 py-2 border border-slate-700 bg-slate-900 text-gray-100 rounded-lg focus:border-cyan-400 outline-none shadow-inner"
+                />
+              </label>
+
+              <!-- Client Name -->
+              <label class="block">
+                <span class="text-xs text-slate-300 font-semibold mb-1 block">Client Name (Required)</span>
+                <input
+                  type="text"
+                  [value]="editFormData().clientName"
+                  (input)="updateEditField('clientName', $event)"
+                  placeholder="Stellar Dynamics Inc."
+                  class="w-full px-3 py-2 border border-slate-700 bg-slate-900 text-gray-100 rounded-lg focus:border-cyan-400 outline-none shadow-inner"
+                />
+              </label>
+
+              <!-- Task Details -->
+              <label class="block">
+                <span class="text-xs text-slate-300 font-semibold mb-1 block">Task Details (Required)</span>
+                <textarea
+                  [value]="editFormData().taskDetails"
+                  (input)="updateEditField('taskDetails', $event)"
+                  placeholder="Describe your current activity in detail..."
+                  rows="3"
+                  class="w-full px-3 py-2 border border-slate-700 bg-slate-900 text-gray-100 rounded-lg focus:border-cyan-400 resize-none outline-none shadow-inner"
+                ></textarea>
+              </label>
+            </div>
+            
+            <!-- Modal Actions -->
+            <div class="flex justify-end space-x-3 mt-6">
+              <button 
+                type="button" 
+                (click)="closeEditModal()"
+                class="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-700 text-gray-300 hover:bg-slate-600 transition duration-150"
+              >
+                Cancel
+              </button>
+              
+              <button 
+                type="submit" 
+                [disabled]="!isEditFormValid()"
+                class="px-4 py-2 text-sm font-bold rounded-lg transition duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                [class]="isEditFormValid() ? 'bg-green-500 text-slate-900 hover:bg-green-400' : 'bg-slate-700 text-gray-400'"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }

@@ -1,0 +1,26 @@
+<div class="svg-clock-wrapper">
+  <svg viewBox="0 0 100 100">
+    <!-- Clock Face -->
+    <circle class="face" cx="50" cy="50" r="48"/>
+
+    <!-- Numbers -->
+    <text x="50" y="18" class="number">12</text>
+    <text x="82" y="54" class="number">3</text>
+    <text x="50" y="90" class="number">6</text>
+    <text x="18" y="54" class="number">9</text>
+
+    <!-- Hands -->
+    <g [attr.transform]="'rotate(' + hourHandRotation() + ' 50 50)'">
+      <line class="hand hour-hand" x1="50" y1="50" x2="50" y2="30"/>
+    </g>
+    <g [attr.transform]="'rotate(' + minuteHandRotation() + ' 50 50)'">
+      <line class="hand minute-hand" x1="50" y1="50" x2="50" y2="15"/>
+    </g>
+    <g [attr.transform]="'rotate(' + secondHandRotation() + ' 50 50)'">
+      <line class="hand second-hand" x1="50" y1="50" x2="50" y2="12"/>
+    </g>
+
+    <!-- Center Dot -->
+    <circle class="center-dot" cx="50" cy="50" r="3"/>
+  </svg>
+</div>

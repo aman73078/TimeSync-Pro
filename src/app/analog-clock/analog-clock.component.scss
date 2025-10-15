@@ -1,0 +1,47 @@
+:host {
+  display: block;
+  width: 80px;
+  height: 80px;
+}
+
+.svg-clock-wrapper, svg {
+  width: 100%;
+  height: 100%;
+}
+
+.face {
+  stroke: #67e8f9;
+  stroke-width: 3;
+  fill: #1e293b;
+}
+
+.number {
+  fill: #94a3b8;
+  font-size: 10px;
+  text-anchor: middle;
+  font-family: sans-serif;
+  font-weight: bold;
+}
+
+.hand {
+  stroke-linecap: round;
+}
+
+.hour-hand {
+  stroke: #e2e8f0;      /* Thicker, slate-200 */
+  stroke-width: 4;
+}
+
+.minute-hand {
+  stroke: #e2e8f0;      /* Thinner, slate-200 */
+  stroke-width: 3;
+}
+
+.second-hand {
+  stroke: #fb7185;      /* Red */
+  stroke-width: 2;
+}
+
+.center-dot {
+  fill: #f1f5f9;
+}
